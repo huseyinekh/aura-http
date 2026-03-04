@@ -1,0 +1,68 @@
+{
+  "name": "aura-http",
+  "version": "0.1.0",
+  "description": "A modern, fetch-based HTTP client with async interceptors and schema validation. A lightweight alternative to Axios.",
+  "keywords": [
+    "http",
+    "fetch",
+    "axios",
+    "client",
+    "interceptor",
+    "typescript",
+    "aura"
+  ],
+  "license": "MIT",
+  "author": "",
+  "homepage": "https://github.com/your-org/aura-http#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/aura-http.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/aura-http/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "import": "./dist/error.mjs",
+      "require": "./dist/error.cjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.mjs",
+      "require": "./dist/types.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "demo:dev": "npm run dev --prefix demo",
+    "demo:build": "npm run build --prefix demo"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}
+
