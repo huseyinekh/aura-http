@@ -112,6 +112,88 @@ describe("Aura HTTP client", () => {
     expect(res.data.intercepted).toBe(true);
   });
 
+  it("resolves relative URL with client baseURL", async () => {
+    const client = new Aura({ baseURL: "https://api.example.com" });
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      );
+
+    const res = await client.get<{ ok: boolean }>("/users");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example.com/users",
+      expect.objectContaining({ method: "GET" })
+    );
+    expect(res.status).toBe(200);
+    expect(res.data.ok).toBe(true);
+  });
+
+  it("per-request baseURL overrides client baseURL", async () => {
+    const client = new Aura({ baseURL: "https://api.example.com" });
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      );
+
+    const res = await client.get<{ ok: boolean }>("/x", {
+      baseURL: "https://alt.example.com"
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://alt.example.com/x",
+      expect.any(Object)
+    );
+    expect(res.status).toBe(200);
+    expect(res.data.ok).toBe(true);
+  });
+
+  it("absolute URL ignores baseURL", async () => {
+    const client = new Aura({ baseURL: "https://api.example.com" });
+
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      );
+
+    await client.get("https://other.com/path");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://other.com/path",
+      expect.any(Object)
+    );
+  });
+
+  it("invokes error interceptors on non-OK responses", async () => {
+    const client = new Aura();
+    let called = false;
+    client.interceptors.error.use(undefined, err => {
+      called = true;
+      throw err;
+    });
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    await expect(client.get("/secure")).rejects.toBeTruthy();
+    expect(called).toBe(true);
+  });
+
   it("honors timeout via AbortSignal.timeout", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -130,4 +212,3 @@ describe("Aura HTTP client", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
-

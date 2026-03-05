@@ -7,6 +7,7 @@ A modern, fetch-based HTTP client with async interceptors, native timeouts, and 
 - **Fetch-native core**: Built directly on top of the Fetch API.
 - **Async interceptors**: Request and response interceptors that support async transforms.
 - **Native timeouts**: Uses `AbortSignal.timeout` for precise cancellation.
+- **Base URL & global headers**: Configure a client-wide `baseURL` and default headers; override per request as needed.
 - **Schema validation**: Plug in Zod, Valibot, or any validator via a simple `validate` hook.
 - **Zero runtime dependencies**: Small, tree-shakeable, and production-ready.
 - **Typed by default**: Strict TypeScript support with full `.d.ts` declarations.
@@ -82,6 +83,28 @@ Aura automatically:
 - Parses JSON responses into JavaScript objects
 
 For non-JSON responses, Aura falls back to `response.text()` by default.
+
+### Client options & baseURL
+
+You can create an `Aura` client with a `baseURL` and default headers. Relative paths will be resolved against `baseURL`. Absolute URLs are never joined.
+
+```ts
+import { Aura } from "aura-http";
+
+const client = new Aura({
+  baseURL: "https://api.example.com",
+  headers: { "X-Requested-With": "Aura" }
+});
+
+// Resolves to https://api.example.com/users
+const res = await client.get<{ users: any[] }>("/users");
+
+// Per-request override: resolves to https://alt.example.com/x
+const alt = await client.get("/x", { baseURL: "https://alt.example.com" });
+
+// Absolute URL: baseURL is ignored
+const ext = await client.get("https://other.com/path");
+```
 
 ### Timeouts with AbortSignal.timeout
 
@@ -192,6 +215,23 @@ aura.interceptors.response.use(async response => {
 - **Async support**: `use` handlers can return a promise; Aura will await them in sequence.
 - **Ejecting handlers**: `use` returns an ID you can pass to `eject(id)` on the corresponding manager.
 
+### Error interceptors
+
+Handle errors centrally (network issues, non-OK status, parse failures) via the error interceptor manager:
+
+```ts
+import aura, { AuraError } from "aura-http";
+
+aura.interceptors.error.use(undefined, err => {
+  if (err instanceof AuraError) {
+    if (err.response?.status === 401) {
+      // Global logout or token refresh
+    }
+  }
+  throw err; // Re-throw to preserve error semantics
+});
+```
+
 ## Error Handling
 
 Aura throws an `AuraError` when:
@@ -257,6 +297,30 @@ All shorthand methods return `Promise<AuraResponse<T>>`:
 - `aura.post<T>(url, data?, config?)`
 - `aura.put<T>(url, data?, config?)`
 - `aura.patch<T>(url, data?, config?)`
+
+### `new Aura(options)`
+
+Create a client with global options:
+
+```ts
+import { Aura } from "aura-http";
+
+const client = new Aura({
+  baseURL: "https://api.example.com",
+  headers: { "X-Env": "prod" }
+});
+```
+
+Options:
+
+- `baseURL?: string` — base URL for resolving relative paths
+- `headers?: HeadersInit` — default headers merged with per-request headers
+
+Interceptors:
+
+- `client.interceptors.request` — async request pipeline
+- `client.interceptors.response` — async response pipeline
+- `client.interceptors.error` — central error handling
 
 ### Types
 

@@ -2,7 +2,8 @@ import {
   AuraRequestConfig,
   AuraResponse,
   HttpMethod,
-  InterceptorManager
+  InterceptorManager,
+  AuraOptions
 } from "./types.js";
 import { AuraError } from "./error.js";
 
@@ -27,11 +28,22 @@ function mergeHeaders(base?: HeadersInit, override?: HeadersInit): Headers {
   return result;
 }
 
+function isAbsoluteUrl(u: string): boolean {
+  return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(u);
+}
+
+function joinUrl(base: string, path: string): string {
+  const b = base.replace(/\/+$/, "");
+  const p = path.replace(/^\/+/, "");
+  return `${b}/${p}`;
+}
+
 async function buildRequestInit<T>(
-  config: AuraRequestConfig<T>
+  config: AuraRequestConfig<T>,
+  baseHeaders?: HeadersInit
 ): Promise<{ url: string; init: RequestInit }> {
   const method = normalizeMethod(config.method);
-  const headers = mergeHeaders(undefined, config.headers);
+  const headers = mergeHeaders(baseHeaders, config.headers);
 
   const init: RequestInit = {
     method,
@@ -106,10 +118,16 @@ async function parseResponseBody<T>(
 }
 
 export class Aura {
+  private readonly options: AuraOptions;
   readonly interceptors = {
     request: new InterceptorManager<AuraRequestConfig<any>>(),
-    response: new InterceptorManager<AuraResponse<any>>()
+    response: new InterceptorManager<AuraResponse<any>>(),
+    error: new InterceptorManager<unknown>()
   };
+
+  constructor(options: AuraOptions = {}) {
+    this.options = options;
+  }
 
   async request<T = unknown>(
     config: AuraRequestConfig<T>
@@ -130,7 +148,14 @@ export class Aura {
     });
 
     const responsePromise = chain.then(async cfg => {
-      const { url, init } = await buildRequestInit(cfg);
+      const base = cfg.baseURL ?? this.options.baseURL;
+      const resolvedUrl = isAbsoluteUrl(cfg.url)
+        ? cfg.url
+        : base
+        ? joinUrl(base, cfg.url)
+        : cfg.url;
+      const cfgWithUrl = { ...cfg, url: resolvedUrl };
+      const { url, init } = await buildRequestInit(cfgWithUrl, this.options.headers);
       let raw: Response;
 
       try {
@@ -197,6 +222,16 @@ export class Aura {
           error => (onRejected ? onRejected(error) : Promise.reject(error))
         ) as Promise<AuraResponse<T>>;
       }
+    });
+
+    finalChain = finalChain.catch(error => {
+      let errChain: Promise<unknown> = Promise.reject(error);
+      this.interceptors.error.forEach(({ onRejected }) => {
+        if (onRejected) {
+          errChain = errChain.catch(onRejected);
+        }
+      });
+      return errChain.then(() => Promise.reject(error));
     });
 
     return finalChain;

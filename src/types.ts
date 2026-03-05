@@ -14,6 +14,7 @@ export interface AuraRequestContext {
 
 export interface AuraRequestConfig<TResponse = unknown> {
   url: string;
+  baseURL?: string;
   method?: HttpMethod;
   headers?: HeadersInit;
   /**
@@ -64,11 +65,11 @@ export interface AuraErrorDetails<T = unknown> {
 }
 
 export type RequestInterceptor<T = unknown> = (
-  config: AuraRequestConfig<T>
+  config: AuraRequestConfig<T>,
 ) => Promise<AuraRequestConfig<T>> | AuraRequestConfig<T>;
 
 export type ResponseInterceptor<T = unknown> = (
-  response: AuraResponse<T>
+  response: AuraResponse<T>,
 ) => Promise<AuraResponse<T>> | AuraResponse<T>;
 
 export type ErrorInterceptor = (error: unknown) => Promise<never> | never;
@@ -78,12 +79,17 @@ export interface InterceptorPair<T = unknown> {
   onRejected?: (error: unknown) => unknown | Promise<unknown>;
 }
 
+export interface AuraOptions {
+  baseURL?: string;
+  headers?: HeadersInit;
+}
+
 export class InterceptorManager<T> {
   private handlers: InterceptorPair<T>[] = [];
 
   use(
     onFulfilled?: (value: T) => T | Promise<T>,
-    onRejected?: (error: unknown) => unknown | Promise<unknown>
+    onRejected?: (error: unknown) => unknown | Promise<unknown>,
   ): number {
     this.handlers.push({ onFulfilled, onRejected });
     return this.handlers.length - 1;
@@ -96,7 +102,7 @@ export class InterceptorManager<T> {
   }
 
   forEach(
-    fn: (handler: Required<InterceptorPair<T>> | InterceptorPair<T>) => void
+    fn: (handler: Required<InterceptorPair<T>> | InterceptorPair<T>) => void,
   ): void {
     for (const h of this.handlers) {
       if (h.onFulfilled || h.onRejected) {
@@ -105,4 +111,3 @@ export class InterceptorManager<T> {
     }
   }
 }
-

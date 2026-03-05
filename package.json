@@ -1,6 +1,6 @@
 {
   "name": "aura-http",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A modern, fetch-based HTTP client with async interceptors and schema validation. Lightweight, zero-dependency, and TypeScript-first.",
   "keywords": [
     "http",
@@ -70,6 +70,8 @@
   },
   "engines": {
     "node": ">=18.17"
+  },
+  "dependencies": {
+    "aura-http": "^0.1.2"
   }
 }
-
