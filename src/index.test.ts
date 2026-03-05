@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { aura, Aura } from "./index";
+import { aura, Aura } from "./index.js";
 
 describe("Aura HTTP client", () => {
   const originalFetch = globalThis.fetch;
@@ -24,7 +24,9 @@ describe("Aura HTTP client", () => {
         })
       );
 
-    const res = await aura.get<{ message: string }("https://example.com/test");
+    const res = await aura.get<{ message: string }>(
+      "https://example.com/test"
+    );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
@@ -42,12 +44,12 @@ describe("Aura HTTP client", () => {
 
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
-      .mockImplementation(async (input, init) => {
+      .mockImplementation(async (_input, init) => {
         const body = init?.body as string;
         expect(JSON.parse(body)).toEqual(payload);
-        expect(init?.headers).toMatchObject({
-          "content-type": "application/json"
-        });
+
+        const headers = new Headers(init?.headers);
+        expect(headers.get("content-type")).toBe("application/json");
 
         return new Response(JSON.stringify({ ok: true }), {
           status: 201,
@@ -55,7 +57,7 @@ describe("Aura HTTP client", () => {
         });
       });
 
-    const res = await aura.post<{ ok: boolean }(
+    const res = await aura.post<{ ok: boolean }>(
       "https://example.com/users",
       payload
     );
@@ -103,34 +105,29 @@ describe("Aura HTTP client", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, init] = fetchMock.mock.calls[0];
-    expect((init?.headers as Record<string, string>)["X-Requested-With"]).toBe(
-      "Aura"
-    );
+    const headers = new Headers(init?.headers);
+    expect(headers.get("X-Requested-With")).toBe("Aura");
 
     expect(res.data.value).toBe(42);
     expect(res.data.intercepted).toBe(true);
   });
 
   it("honors timeout via AbortSignal.timeout", async () => {
-    vi.useFakeTimers();
-
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(
-        () =>
+        (_input, init) =>
           new Promise((_resolve, reject) => {
-            setTimeout(() => reject(new DOMException("Aborted", "AbortError")), 1000);
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            });
           }) as any
       );
 
     const promise = aura.get("https://example.com/timeout", { timeout: 10 });
 
-    vi.advanceTimersByTime(20);
-
     await expect(promise).rejects.toHaveProperty("isAuraError", true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    vi.useRealTimers();
   });
 });
 

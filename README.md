@@ -1,6 +1,6 @@
 # Aura HTTP
 
-A modern, fetch-based HTTP client with async interceptors, native timeouts, and schema validation. **Aura** is a lightweight, zero-dependency alternative to Axios designed for TypeScript-first codebases.
+A modern, fetch-based HTTP client with async interceptors, native timeouts, and schema validation. **Aura** is lightweight, zero-dependency, and designed for TypeScript-first codebases.
 
 ## Features
 
@@ -23,13 +23,13 @@ pnpm add aura-http
 
 Aura targets Node.js `>=18.17` (for native `fetch`, `AbortSignal.timeout`, and `Response`) and modern browsers.
 
-## Why Aura instead of Axios?
+## Why Aura?
 
 - **Native primitives, not shims**  
   Aura is built directly on top of the Fetch API and modern platform features. No custom adapters, no polyfills by default.
 
 - **Async interceptors**  
-  Axios interceptors are synchronous by design; async work often requires awkward patterns. Aura’s interceptors are naturally async, letting you await tokens, feature flags, or remote config effortlessly.
+  Many interceptor systems are synchronous by design; async work often requires awkward patterns. Aura’s interceptors are naturally async, letting you await tokens, feature flags, or remote config effortlessly.
 
 - **First-class AbortSignal.timeout**  
   Instead of re-implementing timeout logic, Aura uses `AbortSignal.timeout(ms)` and integrates cleanly with any existing `AbortSignal` you pass in.
@@ -159,7 +159,7 @@ async function fetchUser(id: string) {
 
 ## Interceptors
 
-Aura exposes an interceptor manager for both requests and responses, similar in spirit to Axios but fully async.
+Aura exposes an interceptor manager for both requests and responses, familiar to interceptor-based HTTP clients but fully async.
 
 ```ts
 import aura from "aura-http";
@@ -306,5 +306,5 @@ npm run lint   # Type-check the project with tsc
 
 ## License
 
-MIT © Your Name
+MIT © huseynekh
 

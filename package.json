@@ -1,25 +1,24 @@
 {
   "name": "aura-http",
-  "version": "0.1.0",
-  "description": "A modern, fetch-based HTTP client with async interceptors and schema validation. A lightweight alternative to Axios.",
+  "version": "0.1.1",
+  "description": "A modern, fetch-based HTTP client with async interceptors and schema validation. Lightweight, zero-dependency, and TypeScript-first.",
   "keywords": [
     "http",
     "fetch",
-    "axios",
     "client",
     "interceptor",
     "typescript",
     "aura"
   ],
   "license": "MIT",
-  "author": "",
-  "homepage": "https://github.com/your-org/aura-http#readme",
+  "author": "Huseyn Ekh (https://github.com/huseyinekh)",
+  "homepage": "https://github.com/huseyinekh/aura-http#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/aura-http.git"
+    "url": "git+https://github.com/huseyinekh/aura-http.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/aura-http/issues"
+    "url": "https://github.com/huseyinekh/aura-http/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",
