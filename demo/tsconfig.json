@@ -14,11 +14,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"],
-    "baseUrl": ".",
-    "paths": {
-      "aura-http": ["../src"]
-    }
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }
