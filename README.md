@@ -306,5 +306,5 @@ npm run lint   # Type-check the project with tsc
 
 ## License
 
-MIT © huseynekh
+MIT © 2026 Huseyn Ekh
 

@@ -1,6 +1,6 @@
 {
   "name": "aura-http",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A modern, fetch-based HTTP client with async interceptors and schema validation. Lightweight, zero-dependency, and TypeScript-first.",
   "keywords": [
     "http",
@@ -19,6 +19,14 @@
   },
   "bugs": {
     "url": "https://github.com/huseyinekh/aura-http/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "main": "./dist/index.cjs",
